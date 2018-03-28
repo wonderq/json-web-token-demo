@@ -25,17 +25,20 @@ public class JWTUtil {
 	 */
     private static SecretKey generalKey(){
 		String stringKey = profiles;
+		//对自己定义的一个string变量进行base64解码
+        //解码完毕则为：aHhoeGh4aHho
 		byte[] encodedKey = Base64.decodeBase64(stringKey);
+		//采用AES方式，生成加密KEY
 	    SecretKey key = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
 	    return key;
 	}
 
 	/**
-	 * 创建jwt
-	 * @param id
-	 * @param subject
-	 * @param ttlMillis
-	 * @return
+	 * 创建jwt，json web token
+	 * @param id 用户id
+	 * @param subject  用户name
+	 * @param ttlMillis token有效时间
+	 * @return  字符串的 token
 	 * @throws Exception
 	 */
 	public static String createJWT(String id, String subject, long ttlMillis) throws Exception {
@@ -58,7 +61,7 @@ public class JWTUtil {
 	
 	/**
 	 * 解析jwt
-	 * @param jwt
+	 * @param jwt json web token
 	 * @return
 	 * @throws Exception
 	 */
@@ -80,7 +83,6 @@ public class JWTUtil {
 			Claims c = JWTUtil.parseJWT(token);
 			System.out.println(c.getSubject());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("this token is invalid");
 		}

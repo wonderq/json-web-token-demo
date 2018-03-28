@@ -28,7 +28,6 @@ public class MyServlet extends HttpServlet {
 	
 	@Override
 	public void init() throws ServletException {
-		// TODO Auto-generated method stub
 		super.init();
 		users.put(Integer.valueOf(1), new User(1,"test1","123","测试用户1"));
 		users.put(Integer.valueOf(2), new User(2,"test2","123","测试用户2"));
@@ -39,14 +38,12 @@ public class MyServlet extends HttpServlet {
      */
     public MyServlet() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
 	/**
 	 * @see HttpServlet#service(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
 		request.setCharacterEncoding("utf-8");
 		response.setCharacterEncoding("utf-8");
 		if(request.getMethod().equals("POST")){
@@ -61,7 +58,6 @@ public class MyServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		// 验证用户
 		Cookie[] cookies =  request.getCookies();
@@ -78,7 +74,6 @@ public class MyServlet extends HttpServlet {
 						username = claims.getSubject();
 						System.out.println("name : " + username);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -88,7 +83,7 @@ public class MyServlet extends HttpServlet {
 			request.setAttribute("username", username);
 			request.getRequestDispatcher("../info.jsp").forward(request, response);
 		}else{
-			//System.out.println("SendRedirect");
+			System.out.println("SendRedirect");
 			response.sendRedirect("../login.jsp");
 		}
 	}
@@ -97,27 +92,29 @@ public class MyServlet extends HttpServlet {
 	 * 登录
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String account = request.getParameter("account");
 		String password = request.getParameter("password");
 		System.out.println(account + " : " + password);
 		String token = ""; 
 		for(Entry<Integer, User> item : users.entrySet()){
 			User u = item.getValue();
+			//if条件写死代码做了授权,后期有时间可以配在web.xml中作授权认证
 			if(u.getAccount().equals(account)
 					&&u.getPassword().equals(password)){
 				try {
 					System.out.println(u.getName());
-					token = JWTUtil.createJWT(String.valueOf(u.getId()), u.getName(), 1000*60*10);
+					//将token 失效时间改为 60秒
+					token = JWTUtil.createJWT(String.valueOf(u.getId()), u.getName(), 1000*60);
 					// 将token放进Cookie
 					Cookie cookie = new Cookie("JWT", token);
 					cookie.setPath("/");
-					// 过期时间设为10min
-					cookie.setMaxAge(60*10);
+					// 设置cookie如果为负数，
+                    // 该Cookie为临时Cookie，关闭浏览器即失效，浏览器也不会以任何形式保存该Cookie。
+                    // 如果为0，表示删除该Cookie。默认为–1
+					cookie.setMaxAge(-1);
 					response.addCookie(cookie);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -125,7 +122,7 @@ public class MyServlet extends HttpServlet {
 		PrintWriter pw = response.getWriter();
 		if(!token.equals("")){
 			System.out.println(token);
-			pw.print("login succeed : " + token);
+			pw.print("login succeeded : " + token);
 		}
 		else{
 			pw.print("login failed : error account or password");
